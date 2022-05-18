@@ -1,2 +1,5 @@
-# microservices-demo-checkoutservice
-Sample cloud-native application with 10 microservices showcasing Kubernetes, Istio, gRPC and OpenTelemetry.
+# checkoutservice
+
+Run the following command to restore dependencies to `vendor/` directory:
+
+    dep ensure --vendor-only
