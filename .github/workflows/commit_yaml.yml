@@ -32,7 +32,49 @@ jobs:
           GITHUB_TOKEN: "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"
           GITHUB_USERNAME: "pepem54"
           GITHUB_USER_EMAIL: "piotr.pernej@sealights.io"
+﻿
+name: Push config to deployment repo
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+jobs:
+  yaml-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+  
+      - name: Deployment repo fetch
+        env:
+          GITHUB_TOKEN: "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"
+          GITHUB_USERNAME: "pepem54"
+          GITHUB_USER_EMAIL: "piotr.pernej@sealights.io"
         run: |
-             git config --global user.name ${{ GITHUB_USERNAME }}
-             git config --global user.email ${{ GITHUB_USER_EMAIL }}
+             git config --global user.name ${GITHUB_USERNAME}
+             git config --global user.email ${GITHUB_USER_EMAIL}
+             git clone https://x-access-token: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@github.com/Sealights/microservices-demo-deployment.git integration
+             git remote set-url origin https://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@github.com/Sealights/microservices-demo-deployment.git             
+             cd integration
+             cp ../deployment/manifest-pod.yaml .
+             git checkout -b master@deployment_file_added
+             git add .
+             git commit -a -m "Deployment config added"
+             git push
 
