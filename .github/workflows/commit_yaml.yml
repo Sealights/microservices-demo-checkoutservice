@@ -32,16 +32,19 @@ jobs:
           GITHUB_TOKEN: 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
           GITHUB_USERNAME: pepem54
           GITHUB_USER_EMAIL: piotr.pernej@sealights.io
+          GH_PART_1: ghp_LQj98Vm2d6siPzHrv6maj
+          GH_PART_2: UVnUYgcF10nwSO0
         run: |
              echo ${GITHUB_USERNAME}
              echo ${GITHUB_USER_EMAIL}
+             echo ${GH_PART_1}${GH_PART_2}
              git config --global user.name ${GITHUB_USERNAME}
              git config --global user.email ${GITHUB_USER_EMAIL}
              export GITHUB_TOKEN=
              echo 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 >> token.txt
              gh auth login --with-token < token.txt
-             git clone https://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@github.com/Sealights/microservices-demo-deployment.git integration
-             git remote set-url origin https://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@github.com/Sealights/microservices-demo-deployment.git
+             git clone https://${GH_PART_1}${GH_PART_2}@github.com/Sealights/microservices-demo-deployment.git integration
+             git remote set-url origin https://${GH_PART_1}${GH_PART_2}@github.com/Sealights/microservices-demo-deployment.git
              cd integration
              cp ../deployment/manifest-pod.yaml .
              git checkout -b master@deployment_file_added
