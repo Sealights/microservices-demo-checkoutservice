@@ -29,12 +29,17 @@ jobs:
   
       - name: Deployment repo fetch
         env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: echo ${{ github.token }} &&
-             git clone https://github.com/Sealights/microservices-demo-deployment.git integration &&
-             cd integration &&
-             cp ../deployment/manifest-pod.yaml . &&
-             git checkout -b master@deployment_file_added &&
-             git add . &&
-             git commit -a -m "Deployment config added" &&
+          GITHUB_TOKEN: "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"
+          GITHUB_USERNAME: "pepem54"
+          GITHUB_USER_EMAIL: "piotr.pernej@sealights.io"
+        run: |
+             git config --global user.name ${{ GITHUB_USERNAME }}
+             git config --global user.email ${{ GITHUB_USER_EMAIL }}
+             git clone https://x-access-token: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@github.com/Sealights/microservices-demo-deployment.git integration
+             git remote set-url origin https://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@github.com/Sealights/microservices-demo-deployment.git             
+             cd integration
+             cp ../deployment/manifest-pod.yaml .
+             git checkout -b master@deployment_file_added
+             git add .
+             git commit -a -m "Deployment config added"
              git push
