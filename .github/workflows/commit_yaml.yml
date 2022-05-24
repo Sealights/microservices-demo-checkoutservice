@@ -31,9 +31,9 @@ jobs:
         env:
           GITHUB_TOKEN: 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
           GITHUB_USERNAME: pepem54
-          GITHUB_USER_EMAIL: piotr.pernej@sealights.io
-          GH_PART_1: ghp_LQj98Vm2d6siPzHrv6maj
-          GH_PART_2: UVnUYgcF10nwSO0
+          GITHUB_USER_EMAIL: piotr.pernej@sealights.io          
+          GH_PART_1: ghp_MAvP4bAh4iH98tWpvn
+          GH_PART_2: AOxcu7GCzHDL1RqM5L
         run: |
              echo ${GITHUB_USERNAME}
              echo ${GITHUB_USER_EMAIL}
