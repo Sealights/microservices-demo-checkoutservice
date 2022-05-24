@@ -28,7 +28,10 @@ jobs:
           aws-region: eu-west-1
   
       - name: Deployment repo fetch
-        run: git clone https://github.com/Sealights/microservices-demo-deployment.git integration &&
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: echo ${{ github.token }} &&
+             git clone https://github.com/Sealights/microservices-demo-deployment.git integration &&
              cd integration &&
              cp ../deployment/manifest-pod.yaml . &&
              git checkout -b master@deployment_file_added &&
