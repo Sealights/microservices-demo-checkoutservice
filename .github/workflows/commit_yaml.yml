@@ -31,7 +31,7 @@ jobs:
         run: git clone https://github.com/Sealights/microservices-demo-deployment.git integration &&
              cd integration &&
              cp ../deployment/manifest-pod.yaml . &&
-             git branch -b master@deployment_file_added &&
+             git checkout -b master@deployment_file_added &&
              git add . &&
              git commit -a -m "Deployment config added" &&
              git push
