@@ -37,6 +37,7 @@ jobs:
              echo ${GITHUB_USER_EMAIL}
              git config --global user.name ${GITHUB_USERNAME}
              git config --global user.email ${GITHUB_USER_EMAIL}
+             export GITHUB_TOKEN=
              echo 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 >> token.txt
              gh auth login --with-token < token.txt
              git clone https://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@github.com/Sealights/microservices-demo-deployment.git integration
