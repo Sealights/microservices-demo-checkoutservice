@@ -37,8 +37,8 @@ jobs:
              echo ${GITHUB_USER_EMAIL}
              git config --global user.name ${GITHUB_USERNAME}
              git config --global user.email ${GITHUB_USER_EMAIL}
-             git clone https://x-access-token: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@github.com/Sealights/microservices-demo-deployment.git integration
-             git remote set-url origin https://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@github.com/Sealights/microservices-demo-deployment.git             
+             git clone https://x-access-token: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@github.com/Sealights/microservices-demo-deployment.git integration
+             git remote set-url origin https://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@github.com/Sealights/microservices-demo-deployment.git             
              cd integration
              cp ../deployment/manifest-pod.yaml .
              git checkout -b master@deployment_file_added
