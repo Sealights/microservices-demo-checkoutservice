@@ -42,4 +42,4 @@ jobs:
              git checkout -b master@deployment_file_added
              git add .
              git commit -a -m "Deployment config added"
-             git push
+             git push --set-upstream origin master@deployment_file_added
