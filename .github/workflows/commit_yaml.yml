@@ -29,9 +29,9 @@ jobs:
   
       - name: Deployment repo fetch
         env:
-          GITHUB_TOKEN: "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"
-          GITHUB_USERNAME: "pepem54"
-          GITHUB_USER_EMAIL: "piotr.pernej@sealights.io"
+          GITHUB_TOKEN: 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
+          GITHUB_USERNAME: pepem54
+          GITHUB_USER_EMAIL: piotr.pernej@sealights.io
         run: |
              git config --global user.name ${GITHUB_USERNAME}
              git config --global user.email ${GITHUB_USER_EMAIL}
