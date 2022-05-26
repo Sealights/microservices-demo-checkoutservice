@@ -11,8 +11,8 @@ on:
   
 env:
   GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-  GITHUB_USERNAME: pepem54
-  GITHUB_USER_EMAIL: piotr.pernej@sealights.io
+  GITHUB_USERNAME: ${{ GH_USER_NAME }}
+  GITHUB_USER_EMAIL: ${{ GH_USER_EMAIL }}
   
 jobs:
   yaml-push:
@@ -38,8 +38,8 @@ jobs:
           #GITHUB_USERNAME: pepem54
           #GITHUB_USER_EMAIL: piotr.pernej@sealights.io          
         run: |             
-             #git config --global user.name ${GITHUB_USERNAME}
-             #git config --global user.email ${GITHUB_USER_EMAIL}
+             git config --global user.name ${GITHUB_USERNAME}
+             git config --global user.email ${GITHUB_USER_EMAIL}
              #export GITHUB_TOKEN=
              #echo ${GH_PART_1}${GH_PART_2} >> token.txt
              #gh auth login --with-token < token.txt
