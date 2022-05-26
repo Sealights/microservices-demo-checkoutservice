@@ -41,9 +41,9 @@ jobs:
              git config --global user.name ${GH_USER_NAME}
              git config --global user.email ${GH_USER_EMAIL}
             
-             export GITHUB_TOKEN=${GH_TOKEN}
-             export GITHUB_TOKEN=
+             export GITHUB_TOKEN=${GH_TOKEN}             
              echo ${GH_TOKEN} >> token.txt
+             export GH_TOKEN=
              gh auth login --with-token < token.txt
              git clone https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git integration
              git remote set-url origin https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git
