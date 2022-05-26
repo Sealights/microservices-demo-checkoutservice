@@ -108,6 +108,7 @@ func main() {
 	mustMapEnv(&svc.paymentSvcAddr, "PAYMENT_SERVICE_ADDR")
 
 	log.Infof("service config: %+v", svc)
+	log.Infof("test change")
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
 	if err != nil {
