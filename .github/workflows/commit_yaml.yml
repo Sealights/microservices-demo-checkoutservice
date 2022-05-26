@@ -38,9 +38,9 @@ jobs:
           #GITHUB_USERNAME: pepem54
           #GITHUB_USER_EMAIL: piotr.pernej@sealights.io          
         run: |             
-             git config --global user.name ${GITHUB_USER_NAME}
-             git config --global user.email ${GITHUB_USER_EMAIL}
-             echo ${GITHUB_USER_NAME}
+             #git config --global user.name ${GITHUB_USER_NAME}
+             #git config --global user.email ${GITHUB_USER_EMAIL}
+            
              #export GITHUB_TOKEN=
              #echo ${GH_PART_1}${GH_PART_2} >> token.txt
              #gh auth login --with-token < token.txt
