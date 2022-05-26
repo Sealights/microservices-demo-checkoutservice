@@ -8,6 +8,10 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+  
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+  
 jobs:
   yaml-push:
     runs-on: ubuntu-latest
@@ -28,19 +32,17 @@ jobs:
           aws-region: eu-west-1
   
       - name: Deployment repo fetch
-        env:
-          GITHUB_TOKEN: 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
-          GITHUB_USERNAME: pepem54
-          GITHUB_USER_EMAIL: piotr.pernej@sealights.io          
-          GH_PART_1: SECRET
+        #env:
+          #GITHUB_USERNAME: pepem54
+          #GITHUB_USER_EMAIL: piotr.pernej@sealights.io          
         run: |             
-             git config --global user.name ${GITHUB_USERNAME}
-             git config --global user.email ${GITHUB_USER_EMAIL}
-             export GITHUB_TOKEN=
-             echo ${GH_PART_1}${GH_PART_2} >> token.txt
-             gh auth login --with-token < token.txt
-             git clone https://${GH_PART_1}@github.com/Sealights/microservices-demo-deployment.git integration
-             git remote set-url origin https://${GH_PART_1}@github.com/Sealights/microservices-demo-deployment.git
+             #git config --global user.name ${GITHUB_USERNAME}
+             #git config --global user.email ${GITHUB_USER_EMAIL}
+             #export GITHUB_TOKEN=
+             #echo ${GH_PART_1}${GH_PART_2} >> token.txt
+             #gh auth login --with-token < token.txt
+             git clone https://${GITHUB_TOKEN}@github.com/Sealights/microservices-demo-deployment.git integration
+             git remote set-url origin https://${GITHUB_TOKEN}@github.com/Sealights/microservices-demo-deployment.git
              cd integration
              cp ../deployment/manifest-pod.yaml .
              git checkout -b master@deployment_file_added
