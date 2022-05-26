@@ -43,7 +43,7 @@ jobs:
             
              export GITHUB_TOKEN=${GH_TOKEN}
              #echo ${GH_TOKEN} >> token.txt
-             #gh auth login --with-token < token.txt
+             gh auth login --with-token < ${GH_TOKEN}
              git clone https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git integration
              git remote set-url origin https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git
              cd integration
