@@ -41,16 +41,17 @@ jobs:
              git config --global user.name ${GH_USER_NAME}
              git config --global user.email ${GH_USER_EMAIL}
             
-             export GITHUB_TOKEN=${GH_TOKEN}             
+             export GITHUB_TOKEN=${GH_TOKEN}
+             export BRANCH_NAME=master@deployment_file_added_$RANDOM
 
              git clone https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git integration
              git remote set-url origin https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git
              cd integration
              cp ../deployment/manifest-pod.yaml .
-             git checkout -b master@deployment_file_added
+             git checkout -b ${BRANCH_NAME}
              git add .
              git commit -a -m "Deployment config added"
-             git push --set-upstream origin master@deployment_file_added_$RANDOM
+             git push --set-upstream origin ${BRANCH_NAME}
              git request-pull master@deployment_file_added https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git master
 
              echo ${GH_TOKEN} >> token.txt
