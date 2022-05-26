@@ -44,8 +44,8 @@ jobs:
              export GITHUB_TOKEN=${GITHUB_TOKEN}
              #echo ${GITHUB_TOKEN} >> token.txt
              #gh auth login --with-token < token.txt
-             git clone https://github.com/Sealights/microservices-demo-deployment.git integration
-             git remote set-url origin https://github.com/Sealights/microservices-demo-deployment.git
+             git clone https://${GITHUB_TOKEN}@github.com/Sealights/microservices-demo-deployment.git integration
+             git remote set-url origin https://${GITHUB_TOKEN}@github.com/Sealights/microservices-demo-deployment.git
              cd integration
              cp ../deployment/manifest-pod.yaml .
              git checkout -b master@deployment_file_added
