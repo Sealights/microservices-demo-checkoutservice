@@ -52,7 +52,7 @@ jobs:
              git add .
              git commit -a -m "Deployment config added"
              git push --set-upstream origin $BRANCH_NAME
-             git request-pull master@deployment_file_added https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git master
+             #git request-pull $BRANCH_NAME https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git master
 
              echo ${GH_TOKEN} >> token.txt
              export GITHUB_TOKEN=
