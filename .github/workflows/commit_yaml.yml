@@ -11,8 +11,8 @@ on:
   
 env:
   GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-  GITHUB_USERNAME: ${{ GH_USER_NAME }}
-  GITHUB_USER_EMAIL: ${{ GH_USER_EMAIL }}
+  GITHUB_USERNAME: ${{ secrets.GH_USER_NAME }}
+  GITHUB_USER_EMAIL: ${{ secrets.GH_USER_EMAIL }}
   
 jobs:
   yaml-push:
