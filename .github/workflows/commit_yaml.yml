@@ -42,10 +42,7 @@ jobs:
              git config --global user.email ${GH_USER_EMAIL}
             
              export GITHUB_TOKEN=${GH_TOKEN}             
-             echo ${GH_TOKEN} >> token.txt
-             export GITHUB_TOKEN=
-             export GH_TOKEN=
-             gh auth login --with-token < token.txt
+
              git clone https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git integration
              git remote set-url origin https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git
              cd integration
@@ -55,3 +52,8 @@ jobs:
              git commit -a -m "Deployment config added"
              git push --set-upstream origin master@deployment_file_added
              git request-pull master@deployment_file_added https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git master
+
+             echo ${GH_TOKEN} >> token.txt
+             export GITHUB_TOKEN=
+             export GH_TOKEN=
+             gh auth login --with-token < token.txt
