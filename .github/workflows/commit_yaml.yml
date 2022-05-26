@@ -11,6 +11,8 @@ on:
   
 env:
   GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+  GITHUB_USERNAME: pepem54
+  GITHUB_USER_EMAIL: piotr.pernej@sealights.io
   
 jobs:
   yaml-push:
