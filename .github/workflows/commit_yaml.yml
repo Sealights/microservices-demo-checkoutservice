@@ -52,7 +52,7 @@ jobs:
              echo "Last touched at: " + `date -u +"%Y-%m-%d %H:%M:%S,%3N"` >> touch.txt
              git checkout -b $BRANCH_NAME
              git add .
-             git commit -a -m "Deployment config added $INITIATOR"
+             git commit -a -m "Deployment config added by $INITIATOR"
              git push --set-upstream origin $BRANCH_NAME
              #git request-pull $BRANCH_NAME https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git master
 
@@ -60,4 +60,4 @@ jobs:
              export GITHUB_TOKEN=
              export GH_TOKEN=
              gh auth login --with-token < token.txt
-             gh pr create -B master --title="Checkout service"
+             gh pr create -B master --title="{$INITIATOR} service" --body="Auto-created PR after {$INITIATOR} service source changed"
