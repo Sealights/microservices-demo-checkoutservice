@@ -44,16 +44,19 @@ jobs:
             
              export GITHUB_TOKEN=${GH_TOKEN}
              export BRANCH_NAME=master@deployment_file_added_$RANDOM
+             export NOW=`date -u +"%Y-%m-%d %H:%M:%S,%3N"`
 
              git clone https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git integration
              git remote set-url origin https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git
              cd integration
              #cp ../deployment/manifest-pod.yaml .
-             echo "Last touched at: " + `date -u +"%Y-%m-%d %H:%M:%S,%3N"` >> touch.txt
+             echo "Last touched at: $NOW" >> touch.txt
              git checkout -b $BRANCH_NAME
              git add .
              git commit -a -m "Deployment config added by $INITIATOR"
+             git tag "$INITIATOR-svc"
              git push --set-upstream origin $BRANCH_NAME
+             git push origin --tags
              #git request-pull $BRANCH_NAME https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git master
 
              echo ${GH_TOKEN} >> token.txt
