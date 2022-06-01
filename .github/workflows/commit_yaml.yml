@@ -60,4 +60,4 @@ jobs:
              export GITHUB_TOKEN=
              export GH_TOKEN=
              gh auth login --with-token < token.txt
-             gh pr create -B master --title="{$INITIATOR} service" --body="Auto-created PR after {$INITIATOR} service source changed"
+             gh pr create -B master --title="$INITIATOR service" --body="Auto-created PR after $INITIATOR service source changed"
