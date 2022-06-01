@@ -54,7 +54,7 @@ jobs:
              git checkout -b $BRANCH_NAME
              git add .
              git commit -a -m "Deployment config added by $INITIATOR"
-             git tag "$INITIATOR-svc"
+             git tag "latest"
              git push --set-upstream origin $BRANCH_NAME
              git push origin --tags
              #git request-pull $BRANCH_NAME https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git master
