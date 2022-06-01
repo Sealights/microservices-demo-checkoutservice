@@ -47,7 +47,7 @@ jobs:
              git clone https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git integration
              git remote set-url origin https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git
              cd integration
-             cp ../deployment/manifest-pod.yaml .
+             #cp ../deployment/manifest-pod.yaml .
              git checkout -b $BRANCH_NAME
              git add .
              git commit -a -m "Deployment config added"
