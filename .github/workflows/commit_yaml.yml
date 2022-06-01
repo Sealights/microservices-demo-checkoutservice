@@ -45,6 +45,8 @@ jobs:
              export GITHUB_TOKEN=${GH_TOKEN}
              export BRANCH_NAME=master@deployment_file_added_$RANDOM
              export NOW=`date -u +"%Y-%m-%d %H:%M:%S,%3N"`
+             
+             sudo apt-get install yq -y
 
              git clone https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git integration
              git remote set-url origin https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git
