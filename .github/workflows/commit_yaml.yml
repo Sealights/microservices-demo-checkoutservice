@@ -51,7 +51,7 @@ jobs:
              git clone https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git integration
              git remote set-url origin https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git
              cd integration
-             cd k3s\$INITIATOR\
+             cd k3s/$INITIATOR
              yq -i '(.spec.template.spec.containers[0].env.[]|select(.name=="VERSION").value)|="$NOW"' manifest-pod.yaml
              #cp ../deployment/manifest-pod.yaml .
              echo "Last touched at: $NOW" >> touch.txt
