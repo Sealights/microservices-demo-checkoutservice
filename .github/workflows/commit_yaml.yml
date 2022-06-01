@@ -48,6 +48,7 @@ jobs:
              git remote set-url origin https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git
              cd integration
              #cp ../deployment/manifest-pod.yaml .
+             echo "Last touched at: " + `date -u +"%Y-%m-%d %H:%M:%S,%3N"` >> touch.txt
              git checkout -b $BRANCH_NAME
              git add .
              git commit -a -m "Deployment config added"
