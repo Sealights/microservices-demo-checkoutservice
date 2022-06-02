@@ -60,7 +60,7 @@ jobs:
              git checkout -b $BRANCH_NAME
              git add .
              git commit -a -m "Deployment config added by $INITIATOR"
-             #git tag "latest"
+             git tag "v1.0.3"
              lastTag=`git describe --tags`
              echo $lastTag
              git push --set-upstream origin $BRANCH_NAME
