@@ -64,7 +64,7 @@ jobs:
              lastTag=`git describe --tags`
              echo $lastTag
              git push --set-upstream origin $BRANCH_NAME
-             #git push origin --tags
+             git push origin --tags
              #git request-pull $BRANCH_NAME https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git master
 
              echo ${GH_TOKEN} >> token.txt
