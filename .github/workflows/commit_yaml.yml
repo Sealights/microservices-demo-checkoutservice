@@ -45,11 +45,16 @@ jobs:
              git config --global user.email ${GH_USER_EMAIL}
             
              export GITHUB_TOKEN=${GH_TOKEN}
-             export BRANCH_NAME=master@deployment_file_added_$RANDOM
+             export BRANCH_NAME=master@deployment_$RANDOM
              export NOW=`date -u +"%Y-%m-%d %H:%M:%S,%3N"`
              
              sudo snap install yq
 
+             git tag "v1.0.3"
+             lastTag=`git describe --tags`
+             echo $lastTag
+             git push origin --tags
+             
              git clone https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git integration
              git remote set-url origin https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git
              cd integration
@@ -60,11 +65,8 @@ jobs:
              git checkout -b $BRANCH_NAME
              git add .
              git commit -a -m "Deployment config added by $INITIATOR"
-             git tag "v1.0.3"
-             lastTag=`git describe --tags`
-             echo $lastTag
-             git push --set-upstream origin $BRANCH_NAME
-             git push origin --tags
+
+             git push --set-upstream origin $BRANCH_NAME             
              #git request-pull $BRANCH_NAME https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git master
 
              echo ${GH_TOKEN} >> token.txt
