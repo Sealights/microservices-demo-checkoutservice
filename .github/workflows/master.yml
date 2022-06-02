@@ -1,5 +1,5 @@
 ﻿
-name: Push to master
+name: Build and push image
 on:
   push:
     branches: [ master ]
@@ -23,9 +23,9 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-1
+          aws-access-key-id: ${{ secrets.AWS_US_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_US_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -37,7 +37,7 @@ jobs:
         with:
           github_token: ${{ secrets.GH_PAT }}
           
-      - name: Build, tag, and push image to Amazon ECR
+      - name: Build and push image to Amazon ECR
         if: github.event_name != 'pull_request'
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
