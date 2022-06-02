@@ -36,6 +36,30 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-1
     
+      - name: Application Version
+        id: version
+      - uses: paulhatch/semantic-version@v4.0.2
+        with:
+          tag_prefix: "v"
+          # A string which, if present in a git commit, indicates that a change represents a
+          # major (breaking) change, supports regular expressions wrapped with '/'
+          major_pattern: "(MAJOR)"
+          # Same as above except indicating a minor change, supports regular expressions wrapped with '/'
+          minor_pattern: "(MINOR)"
+          # A string to determine the format of the version output
+          format: "${major}.${minor}.${patch}-prerelease${increment}"
+          # Optional path to check for changes. If any changes are detected in the path the
+          # 'changed' output will true. Enter multiple paths separated by spaces.
+          #change_path: "src/my-service"
+          # Named version, will be used as suffix for name version tag
+          namespace: $INITIATOR
+          # If this is set to true, *every* commit will be treated as a new version.
+          bump_each_commit: true
+          # If true, the body of commits will also be searched for major/minor patterns to determine the version type.
+          search_commit_body: false
+          # The output method used to generate list of users, 'csv' or 'json'.
+          user_format_type: "csv"
+          
       - name: Deployment repo fetch
         #env:
           #GITHUB_USERNAME: pepem54
@@ -50,10 +74,10 @@ jobs:
              
              sudo snap install yq
 
-             git tag "v1.0.3"
-             lastTag=`git describe --tags`
-             echo $lastTag
-             git push origin --tags
+             #git tag "v1.0.3"
+             #lastTag=`git describe --tags`
+             #echo $lastTag
+             #git push origin --tags
              
              git clone https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git integration
              git remote set-url origin https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git
