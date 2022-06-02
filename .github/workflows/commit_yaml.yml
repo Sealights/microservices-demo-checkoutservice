@@ -38,7 +38,7 @@ jobs:
     
       - name: Application Version
         id: version
-      - uses: paulhatch/semantic-version@v4.0.2
+        uses: paulhatch/semantic-version@v4.0.2
         with:
           tag_prefix: "v"
           # A string which, if present in a git commit, indicates that a change represents a
