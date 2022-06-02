@@ -38,7 +38,7 @@ jobs:
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.0
         with:
-          github_token: ${GH_TOKEN}
+          github_token: ${{ secrets.GH_PAT }}
 
       - name: Deployment repo fetch     
         run: |             
