@@ -31,12 +31,18 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: ${{ secrets.GH_PAT }}
+          
       - name: Build, tag, and push image to Amazon ECR
         if: github.event_name != 'pull_request'
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: microservices-demo-checkoutservice
-          IMAGE_TAG: latest
+          IMAGE_TAG: ${{ steps.tag_version.outputs.new_tag }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .          
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
