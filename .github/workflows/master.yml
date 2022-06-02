@@ -1,5 +1,5 @@
 ﻿
-name: Build and push image
+name: Build, push image, trigger tests
 on:
   push:
     branches: [ master ]
@@ -75,11 +75,11 @@ jobs:
              echo "Last touched at: $NOW" >> touch.txt
              git checkout -b $BRANCH_NAME
              git add .
-             git commit -a -m "Deployment config added by $INITIATOR"
+             git commit -a -m "Deployment amended by $INITIATOR"
              git push --set-upstream origin $BRANCH_NAME             
              #git request-pull $BRANCH_NAME https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git master
              echo ${GH_TOKEN} >> token.txt
              export GITHUB_TOKEN=
              export GH_TOKEN=
              gh auth login --with-token < token.txt
-             gh pr create -B master --title="$INITIATOR service" --body="Auto-created PR after $INITIATOR service source changed"          
+             gh pr create -B master --title="$INITIATOR service - ${{ steps.tag_version.outputs.new_tag }}" --body="Auto-created PR after $INITIATOR service (${{ steps.tag_version.outputs.new_tag }}) source changed"          
