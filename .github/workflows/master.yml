@@ -5,9 +5,16 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-
+          
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+  
+env:
+  GH_TOKEN: ${{ secrets.GH_PAT }}
+  GH_USER_NAME: ${{ secrets.GH_USER_NAME }}
+  GH_USER_EMAIL: ${{ secrets.GH_USER_EMAIL }}
+  INITIATOR: "checkout"
+  
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -46,3 +53,33 @@ jobs:
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .          
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          
+      - name: Trigger e2e tests      
+        run: |             
+             git config --global user.name ${GH_USER_NAME}
+             git config --global user.email ${GH_USER_EMAIL}
+            
+             export GITHUB_TOKEN=${GH_TOKEN}
+             export BRANCH_NAME=master@deployment_$RANDOM
+             #export NOW=`date -u +"%Y-%m-%d %H:%M:%S,%3N"`
+             export VERSION=${{ steps.tag_version.outputs.new_tag }}
+             
+             sudo snap install yq
+               
+             git clone https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git integration
+             git remote set-url origin https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git
+             cd integration
+             cd k3s/$INITIATOR
+             yq -i '(.spec.template.spec.containers[0].env.[]|select(.name=="VERSION").value)|=strenv(VERSION)' manifest-pod.yaml
+             #cp ../deployment/manifest-pod.yaml .
+             echo "Last touched at: $NOW" >> touch.txt
+             git checkout -b $BRANCH_NAME
+             git add .
+             git commit -a -m "Deployment config added by $INITIATOR"
+             git push --set-upstream origin $BRANCH_NAME             
+             #git request-pull $BRANCH_NAME https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git master
+             echo ${GH_TOKEN} >> token.txt
+             export GITHUB_TOKEN=
+             export GH_TOKEN=
+             gh auth login --with-token < token.txt
+             gh pr create -B master --title="$INITIATOR service" --body="Auto-created PR after $INITIATOR service source changed"          
