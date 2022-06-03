@@ -55,14 +55,12 @@ jobs:
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .          
           echo '::set-output name=IMAGE_URI::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG'
-          
-          export aa=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo $aa
+                   
+          echo "XX: ${{ steps.build_container.outputs.image_uri }}"
           
       - name: Push image to Amazon ECR
         if: github.event_name != 'pull_request'
         run: |
-          echo "XXX: $aa"
           echo ${{ steps.build_container.outputs.image_uri }}
           docker push ${{ steps.build_container.outputs.image_uri }}
 
