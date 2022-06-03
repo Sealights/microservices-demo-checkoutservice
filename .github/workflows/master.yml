@@ -89,6 +89,8 @@ jobs:
              
       - name: Create Pull Request      
         run: |      
+             cd integration
+             cd k3s/$INITIATOR        
              #git request-pull ${{ steps.branch_creation.outputs.branch_name }}" https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git master
              echo ${GH_TOKEN} >> token.txt
              export GITHUB_TOKEN=
