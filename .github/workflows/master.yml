@@ -16,6 +16,7 @@ env:
   INITIATOR: "checkout"
   IMAGE: "159616352881.dkr.ecr.eu-west-1.amazonaws.com/microservices-demo-checkoutservice"
   ECR_REPOSITORY: microservices-demo-checkoutservice
+  GH_DEPLOYMENT_REPO: "Sealights/microservices-demo-deployment.git"
   
 jobs:
   build-test-push:
@@ -112,7 +113,7 @@ jobs:
         run: |      
              cd integration
              cd k3s/$INITIATOR        
-             #git request-pull ${{ steps.branch_creation.outputs.branch_name }}" https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git master
+             #git request-pull ${{ steps.branch_creation.outputs.branch_name }}" https://${GH_TOKEN}@github.com/GH_DEPLOYMENT_REPO master
              echo ${GH_TOKEN} >> token.txt
              export GITHUB_TOKEN=
              export GH_TOKEN=
