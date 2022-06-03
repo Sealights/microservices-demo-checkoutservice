@@ -58,7 +58,8 @@ jobs:
 
       - name: Push image to Amazon ECR
         if: github.event_name != 'pull_request'
-        run: |                    
+        run: |
+          echo ${{ steps.build_container.outputs.image_uri }}
           docker push ${{ steps.build_container.outputs.image_uri }}
 
       - name: Integration build - fetch deployment repo
