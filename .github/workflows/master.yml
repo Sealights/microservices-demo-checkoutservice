@@ -45,7 +45,7 @@ jobs:
         with:
           github_token: ${{ secrets.GH_PAT }}
           
-      - name: Build and test and push image to Amazon ECR
+      - name: Build container and test
         id: build_container
         if: github.event_name != 'pull_request'
         env:
@@ -55,10 +55,14 @@ jobs:
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .          
           echo '::set-output name=IMAGE_URI::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG'
-
+          
+          export aa=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo $aa
+          
       - name: Push image to Amazon ECR
         if: github.event_name != 'pull_request'
         run: |
+          echo "XXX: $aa"
           echo ${{ steps.build_container.outputs.image_uri }}
           docker push ${{ steps.build_container.outputs.image_uri }}
 
