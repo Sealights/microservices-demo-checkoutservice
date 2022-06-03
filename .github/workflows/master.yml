@@ -55,13 +55,15 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .          
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           
-      - name: Trigger e2e tests      
+      - name: Trigger e2e tests 
+        id: branch_creation
         run: |             
              git config --global user.name ${GH_USER_NAME}
              git config --global user.email ${GH_USER_EMAIL}
             
              export GITHUB_TOKEN=${GH_TOKEN}
              export BRANCH_NAME=master@deployment_$RANDOM
+             echo '::set-output name=BRANCH_NAME::$BRANCH_NAME'
              #export NOW=`date -u +"%Y-%m-%d %H:%M:%S,%3N"`
              export VERSION=${{ steps.tag_version.outputs.new_tag }}
              export IMAGE=${IMAGE}:$VERSION
@@ -83,8 +85,11 @@ jobs:
              git checkout -b $BRANCH_NAME
              git add .
              git commit -a -m "Deployment amended by $INITIATOR"
-             git push --set-upstream origin $BRANCH_NAME             
-             #git request-pull $BRANCH_NAME https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git master
+             git push --set-upstream origin $BRANCH_NAME      
+             
+      - name: Create Pull Request      
+        run: |      
+             #git request-pull ${{ steps.branch_creation.outputs.branch_name }}" https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git master
              echo ${GH_TOKEN} >> token.txt
              export GITHUB_TOKEN=
              export GH_TOKEN=
