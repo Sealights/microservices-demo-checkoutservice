@@ -15,6 +15,7 @@ env:
   GH_USER_EMAIL: ${{ secrets.GH_USER_EMAIL }}
   INITIATOR: "checkout"
   IMAGE: "159616352881.dkr.ecr.eu-west-1.amazonaws.com/microservices-demo-checkoutservice"
+  ECR_REPOSITORY: microservices-demo-checkoutservice
   
 jobs:
   build-test-push:
@@ -49,20 +50,19 @@ jobs:
         id: build_container
         if: github.event_name != 'pull_request'
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: microservices-demo-checkoutservice
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}          
           IMAGE_TAG: ${{ steps.tag_version.outputs.new_tag }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .          
-          echo '::set-output name=IMAGE_URI::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG'
-                   
-          echo "XX: ${{ steps.build_container.outputs.image_uri }}"
+          #echo '::set-output name=IMAGE_URI::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG'
           
       - name: Push image to Amazon ECR
         if: github.event_name != 'pull_request'
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}          
+          IMAGE_TAG: ${{ steps.tag_version.outputs.new_tag }}        
         run: |
-          echo ${{ steps.build_container.outputs.image_uri }}
-          docker push ${{ steps.build_container.outputs.image_uri }}
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Integration build - fetch deployment repo
         id: branch_creation
