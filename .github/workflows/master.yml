@@ -64,7 +64,7 @@ jobs:
              export BRANCH_NAME=master@deployment_$RANDOM
              #export NOW=`date -u +"%Y-%m-%d %H:%M:%S,%3N"`
              export VERSION=${{ steps.tag_version.outputs.new_tag }}
-             export IMAGE=${IMAGE}$VERSION
+             export IMAGE=${IMAGE}:$VERSION
              
              echo $IMAGE
              
