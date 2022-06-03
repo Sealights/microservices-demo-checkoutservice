@@ -55,33 +55,46 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .          
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           
-      - name: Trigger e2e tests 
+      - name: Fetch deployment repo
         id: branch_creation
         run: |             
              git config --global user.name ${GH_USER_NAME}
              git config --global user.email ${GH_USER_EMAIL}
             
              export GITHUB_TOKEN=${GH_TOKEN}
-             export BRANCH_NAME=master@deployment_$RANDOM
-             echo '::set-output name=BRANCH_NAME::$BRANCH_NAME'
-             #export NOW=`date -u +"%Y-%m-%d %H:%M:%S,%3N"`
+
+                                       
+             git clone https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git integration
+             git remote set-url origin https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git
+             cd integration
+             cd k3s/$INITIATOR
+             
+      - name: Modify manifest 
+        run: |
              export VERSION=${{ steps.tag_version.outputs.new_tag }}
              export IMAGE=${IMAGE}:$VERSION
              
              echo $IMAGE
              
              sudo snap install yq
-               
-             git clone https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git integration
-             git remote set-url origin https://${GH_TOKEN}@github.com/Sealights/microservices-demo-deployment.git
+
              cd integration
              cd k3s/$INITIATOR
              
              yq -i '(.spec.template.spec.containers[0].env.[]|select(.name=="VERSION").value)|=strenv(VERSION)' manifest-pod.yaml
              yq -i '(.spec.template.spec.containers[0].image)=strenv(IMAGE)' manifest-pod.yaml
              
-             #cp ../deployment/manifest-pod.yaml .
-             echo "Last touched at: $NOW" >> touch.txt
+      - name: Create deployment branch 
+        run: | 
+             cd integration
+             cd k3s/$INITIATOR
+             
+             #export NOW=`date -u +"%Y-%m-%d %H:%M:%S,%3N"`
+             #echo "Last touched at: $NOW" >> touch.txt
+             
+             export BRANCH_NAME=master@deployment_$RANDOM
+             echo '::set-output name=BRANCH_NAME::$BRANCH_NAME'
+             
              git checkout -b $BRANCH_NAME
              git add .
              git commit -a -m "Deployment amended by $INITIATOR"
