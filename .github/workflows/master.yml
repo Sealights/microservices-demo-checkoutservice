@@ -37,6 +37,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_US_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
 
+      - name: Install yq
+        run: |
+          sudo snap install yq
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
@@ -87,7 +91,7 @@ jobs:
              export IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:$VERSION
              echo $IMAGE
              
-             sudo snap install yq
+             #sudo snap install yq
 
              cd integration
              cd k3s/$INITIATOR
