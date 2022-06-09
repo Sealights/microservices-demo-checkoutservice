@@ -33,6 +33,8 @@ RUN chmod +x ./slcli
 
 RUN wget https://agents.sealights.co/slgoagent/latest/slgoagent-linux-amd64.tar.gz 
 RUN tar -xzvf slgoagent-linux-amd64.tar.gz 
+
+RUN ls -la
 RUN chmod +x ./build-scanner
 
 RUN ./slcli config init --lang go --token $RM_DEV_SL_TOKEN
