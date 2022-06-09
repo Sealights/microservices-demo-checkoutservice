@@ -27,21 +27,17 @@ COPY . .
 # Skaffold passes in debug-oriented compiler flags
 ARG SKAFFOLD_GO_GCFLAGS
 
-RUN wget https://agents.sealights.co/slgoagent/latest/slgoagent-linux-amd64.tar.gz 
-RUN tar -xzvf slgoagent-linux-amd64.tar.gz 
-
-RUN ls -la
-RUN chmod +x ./build-scanner
-
 RUN wget https://agents.sealights.co/slcli/latest/slcli-linux-amd64.tar.gz
 RUN tar -xzvf slcli-linux-amd64.tar.gz 
 RUN chmod +x ./slcli
 
-
+RUN wget https://agents.sealights.co/slgoagent/latest/slgoagent-linux-amd64.tar.gz 
+RUN tar -xzvf slgoagent-linux-amd64.tar.gz 
+RUN chmod +x ./slgoagent
 
 RUN ./slcli config init --lang go --token $RM_DEV_SL_TOKEN
 RUN BUILD_NAME=$(date +%F_%T) && ./slcli config create-bsid --app "checkoutservice" --build "$BUILD_NAME" --branch "master"
-RUN ./slcli scan  --bsid buildSessionId.txt --path-to-scanner ./build-scanner --workspacepath ./ --scm git --scmProvider github
+RUN ./slcli scan  --bsid buildSessionId.txt --path-to-scanner ./slgoagent --workspacepath ./ --scm git --scmProvider github
 RUN go build -gcflags="${SKAFFOLD_GO_GCFLAGS}" -o /checkoutservice .
 RUN go test ./... -v
 
