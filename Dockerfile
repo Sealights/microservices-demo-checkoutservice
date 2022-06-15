@@ -32,7 +32,7 @@ RUN wget https://agents.sealights.co/slcli/latest/slcli-linux-amd64.tar.gz \
     && chmod +x ./slcli
 RUN wget https://agents.sealights.co/slgoagent/latest/slgoagent-linux-amd64.tar.gz \
     && tar -xzvf slgoagent-linux-amd64.tar.gz \
-    && chmod +x ./slgoagent \
+    && chmod +x ./slgoagent
 
 RUN ./slcli config init --lang go --token $RM_DEV_SL_TOKEN
 RUN BUILD_NAME=$(date +%F_%T) && ./slcli config create-bsid --app "checkoutservice" --build "$BUILD_NAME" --branch "master"
