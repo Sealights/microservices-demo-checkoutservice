@@ -40,4 +40,10 @@ spec:
             - name: AD_SERVICE_ADDR
               value: "b-adservice:9555" 
             - name: PAYMENT_SERVICE_ADDR
-              value: "b-paymentservice:50051"                            
+              value: "b-paymentservice:50051"
+            - name: OTEL_AGENT_COLLECTOR_PROTOCOL
+              value: "grpc"
+            - name: OTEL_AGENT_COLLECTOR_PORT
+              value: "443"
+
+
