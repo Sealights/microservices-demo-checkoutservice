@@ -52,7 +52,7 @@ RUN if [[ $IS_PR -eq 0 ]]; then \
 else \ 
     echo "Pull request"; \
     ./slcli config create-pr-bsid --app "checkoutservice" --branch REMOVE-THIS --build REMOVE-YES --target-branch "${TARGET_BRANCH}" \
-        --latestCommit "${LATEST_COMMIT}" --pull-request-number "${PR_NUMBER}" --repository-url "${TARGET_REPO_URL}"; \      
+        --latest-commit "${LATEST_COMMIT}" --pull-request-number "${PR_NUMBER}" --repository-url "${TARGET_REPO_URL}"; \      
 fi
 
 RUN ./slcli scan  --bsid buildSessionId.txt --path-to-scanner ./slgoagent --workspacepath ./ --scm git --scmProvider github
