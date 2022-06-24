@@ -1,17 +1,3 @@
-# Copyright 2020 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 FROM sealights/golang-builder as builder
 WORKDIR /src
 
@@ -29,6 +15,8 @@ ENV RM_DEV_SL_TOKEN ${RM_DEV_SL_TOKEN}
 ENV SEALIGHTS_LOG_LEVEL=info
 ENV SEALIGHTS_LAB_ID="integ_master_813e_SLBoutique"
 ENV SEALIGHTS_TEST_STAGE="Unit Tests"
+ENV OTEL_AGENT_COLLECTOR_PROTOCOL = "grpc"
+
 ENV IS_PR ${IS_PR}
 ENV TARGET_BRANCH ${TARGET_BRANCH}
 ENV LATEST_COMMIT ${LATEST_COMMIT}
@@ -41,7 +29,6 @@ RUN echo "latestCommit: ${LATEST_COMMIT}"
 RUN echo "pullRequestNumber ${PR_NUMBER}"
 RUN echo "repositoryUrl ${TARGET_REPO_URL}"
 RUN echo "========================================================="
-
 
 COPY . .
 
@@ -64,10 +51,9 @@ RUN if [[ $IS_PR -eq 0 ]]; then \
     BUILD_NAME=$(date +%F_%T) && ./slcli config create-bsid --app "checkoutservice" --build "$BUILD_NAME" --branch "master" ; \
 else \ 
     echo "Pull request"; \
-    BUILD_NAME=$(date +%F_%T) && ./slcli prConfig create-bsid --app "checkoutservice" --targetBranch "${TARGET_BRANCH}" \
-        --latestCommit "${LATEST_COMMIT}" --pullRequestNumber "${PR_NUMBER}" --repositoryUrl "${TARGET_REPO_URL}"; \
+    ./slcli config create-pr-bsid --app "checkoutservice" --branch REMOVE-THIS --build REMOVE-YES --targetBranch "${TARGET_BRANCH}" \
+        --latestCommit "${LATEST_COMMIT}" --pull-request-number "${PR_NUMBER}" --repository-url "${TARGET_REPO_URL}"; \      
 fi
-
 
 RUN ./slcli scan  --bsid buildSessionId.txt --path-to-scanner ./slgoagent --workspacepath ./ --scm git --scmProvider github
 Run go test -v ./...
