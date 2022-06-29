@@ -10,6 +10,7 @@ ARG TARGET_BRANCH=""
 ARG LATEST_COMMIT=""
 ARG PR_NUMBER=""
 ARG TARGET_REPO_URL=""
+ARG BUILD_NAME=""
 
 ENV RM_DEV_SL_TOKEN ${RM_DEV_SL_TOKEN}
 ENV SEALIGHTS_LOG_LEVEL=info
@@ -22,6 +23,7 @@ ENV TARGET_BRANCH ${TARGET_BRANCH}
 ENV LATEST_COMMIT ${LATEST_COMMIT}
 ENV PR_NUMBER ${PR_NUMBER}
 ENV TARGET_REPO_URL ${TARGET_REPO_URL}
+ENV BUILD_NAME ${BUILD_NAME}
 
 RUN echo "========================================================="
 RUN echo "targetBranch: ${TARGET_BRANCH}"
@@ -48,10 +50,10 @@ RUN ./slcli config init --lang go --token $RM_DEV_SL_TOKEN
 
 RUN if [[ $IS_PR -eq 0 ]]; then \
     echo "Check-in to repo"; \
-    BUILD_NAME=$(date +%F_%T) && ./slcli config create-bsid --app "checkoutservice" --build "$BUILD_NAME" --branch "master" ; \
+    ./slcli config create-bsid --app "checkoutservice" --build "$BUILD_NAME" --branch "master" ; \
 else \ 
     echo "Pull request"; \
-    ./slcli config create-pr-bsid --app "checkoutservice" --branch REMOVE-THIS --build REMOVE-YES --target-branch "${TARGET_BRANCH}" \
+    ./slcli config create-pr-bsid --app "checkoutservice" --branch REMOVE-THIS --build "$BUILD_NAME" --target-branch "${TARGET_BRANCH}" \
         --latest-commit "${LATEST_COMMIT}" --pull-request-number "${PR_NUMBER}" --repository-url "${TARGET_REPO_URL}"; \      
 fi
 
