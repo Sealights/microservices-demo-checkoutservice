@@ -335,6 +335,8 @@ func (cs *checkoutService) prepOrderItems(ctx context.Context, items []*pb.CartI
 }
 
 func (cs *checkoutService) convertCurrency(ctx context.Context, from *pb.Money, toCurrency string) (*pb.Money, error) {
+	log.Infof("Converting currency. Svc addr: %s", cs.currencySvcAddr)	
+	
 	conn, err := createClient(ctx, cs.currencySvcAddr)
 	if err != nil {
 		return nil, fmt.Errorf("could not connect currency service: %+v", err)
