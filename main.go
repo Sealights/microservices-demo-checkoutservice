@@ -239,18 +239,7 @@ type orderPrep struct {
 	shippingCostLocalized *pb.Money
 }
 
-func (cs *checkoutService) CallCurrencyService(ctx context.Context) {
-	var m *pb.Money
-	m.CurrencyCode = "EUR"
-	m.Units = 100
-	m.Nanos = 0
-
-	cs.convertCurrency(ctx, m, "USD")
-}
-
 func (cs *checkoutService) prepareOrderItemsAndShippingQuoteFromCart(ctx context.Context, userID, userCurrency string, address *pb.Address) (orderPrep, error) {
-	cs.CallCurrencyService(ctx)
-
 	var out orderPrep
 	cartItems, err := cs.getUserCart(ctx, userID)
 	if err != nil {
