@@ -120,6 +120,11 @@ type checkoutService struct {
 }
 
 func main() {
+	var m *pb.Money = new(pb.Money)
+	m.CurrencyCode = "EUR"
+	m.Units = 100
+	m.Nanos = 0
+
 	port := listenPort
 	if os.Getenv("PORT") != "" {
 		port = os.Getenv("PORT")
@@ -235,7 +240,6 @@ type orderPrep struct {
 }
 
 func (cs *checkoutService) CallCurrencyService(ctx context.Context) {
-	//var m *hipstershop.Money
 	var m *pb.Money
 	m.CurrencyCode = "EUR"
 	m.Units = 100
