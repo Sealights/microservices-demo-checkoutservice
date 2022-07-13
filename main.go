@@ -116,7 +116,7 @@ type checkoutService struct {
 	emailSvcAddr          string
 	paymentSvcAddr        string
 	pb.UnimplementedCheckoutServiceServer
-	orderId 	      string
+	orderId string
 }
 
 func main() {
@@ -176,10 +176,10 @@ func (cs *checkoutService) Watch(req *healthpb.HealthCheckRequest, ws healthpb.H
 
 func (cs *checkoutService) PlaceOrder(ctx context.Context, req *pb.PlaceOrderRequest) (*pb.PlaceOrderResponse, error) {
 	orderID, err := uuid.NewUUID()
-	cs.orderId = (string)orderID
-	
+	cs.orderId = orderID.String()
+
 	log.Infof("[PlaceOrder] user_id=%q user_currency=%q, orderid=%q", req.UserId, req.UserCurrency, cs.orderId)
-	
+
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to generate order uuid")
 	}
@@ -319,21 +319,21 @@ func (cs *checkoutService) prepOrderItems(ctx context.Context, items []*pb.CartI
 		return nil, fmt.Errorf("could not connect product catalog service: %+v", err)
 	}
 	defer conn.Close()
-	
+
 	log.Infof("Items iteration for order: %s", cs.orderId)
-	
+
 	cl := pb.NewProductCatalogServiceClient(conn)
 
 	for i, item := range items {
 		log.Infof("Item: %v", item)
-		
+
 		product, err := cl.GetProduct(ctx, &pb.GetProductRequest{Id: item.GetProductId()})
 		if err != nil {
 			return nil, fmt.Errorf("failed to get product #%q", item.GetProductId())
 		}
-		
+
 		log.Infof("Converting currency for order: %s, item: %v", cs.orderId, item)
-		
+
 		price, err := cs.convertCurrency(ctx, product.GetPriceUsd(), userCurrency)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert price of %q to %s", item.GetProductId(), userCurrency)
@@ -346,16 +346,16 @@ func (cs *checkoutService) prepOrderItems(ctx context.Context, items []*pb.CartI
 }
 
 func (cs *checkoutService) convertCurrency(ctx context.Context, from *pb.Money, toCurrency string) (*pb.Money, error) {
-	log.Infof("Converting currency. Svc addr: %s", cs.currencySvcAddr)	
-	
+	log.Infof("Converting currency. Svc addr: %s", cs.currencySvcAddr)
+
 	conn, err := createClient(ctx, cs.currencySvcAddr)
 	if err != nil {
 		return nil, fmt.Errorf("could not connect currency service: %+v", err)
 	}
 	defer conn.Close()
-	
-	log.Infof("Calling currency service")	
-	
+
+	log.Infof("Calling currency service")
+
 	result, err := pb.NewCurrencyServiceClient(conn).Convert(context.TODO(), &pb.CurrencyConversionRequest{
 		From:   from,
 		ToCode: toCurrency})
@@ -363,9 +363,9 @@ func (cs *checkoutService) convertCurrency(ctx context.Context, from *pb.Money, 
 		log.Infof("failed to convert currency: %+v", err)
 		return nil, fmt.Errorf("failed to convert currency: %+v", err)
 	}
-	
-	log.Infof("Conversion done")	
-	
+
+	log.Infof("Conversion done")
+
 	return result, err
 }
 
