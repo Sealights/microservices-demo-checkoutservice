@@ -316,13 +316,21 @@ func (cs *checkoutService) prepOrderItems(ctx context.Context, items []*pb.CartI
 		return nil, fmt.Errorf("could not connect product catalog service: %+v", err)
 	}
 	defer conn.Close()
+	
+	log.Infof("Items iteration")
+	
 	cl := pb.NewProductCatalogServiceClient(conn)
 
 	for i, item := range items {
+		log.Infof("Item: %v", item)
+		
 		product, err := cl.GetProduct(ctx, &pb.GetProductRequest{Id: item.GetProductId()})
 		if err != nil {
 			return nil, fmt.Errorf("failed to get product #%q", item.GetProductId())
 		}
+		
+		log.Infof("Converting currency for: %v", item)
+		
 		price, err := cs.convertCurrency(ctx, product.GetPriceUsd(), userCurrency)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert price of %q to %s", item.GetProductId(), userCurrency)
