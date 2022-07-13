@@ -350,12 +350,19 @@ func (cs *checkoutService) convertCurrency(ctx context.Context, from *pb.Money, 
 		return nil, fmt.Errorf("could not connect currency service: %+v", err)
 	}
 	defer conn.Close()
+	
+	log.Infof("Calling currency service")	
+	
 	result, err := pb.NewCurrencyServiceClient(conn).Convert(context.TODO(), &pb.CurrencyConversionRequest{
 		From:   from,
 		ToCode: toCurrency})
 	if err != nil {
+		log.Infof("failed to convert currency: %+v", err)
 		return nil, fmt.Errorf("failed to convert currency: %+v", err)
 	}
+	
+	log.Infof("Conversion done")	
+	
 	return result, err
 }
 
