@@ -116,6 +116,7 @@ type checkoutService struct {
 	emailSvcAddr          string
 	paymentSvcAddr        string
 	pb.UnimplementedCheckoutServiceServer
+	orderId 	      string
 }
 
 func main() {
@@ -174,9 +175,11 @@ func (cs *checkoutService) Watch(req *healthpb.HealthCheckRequest, ws healthpb.H
 }
 
 func (cs *checkoutService) PlaceOrder(ctx context.Context, req *pb.PlaceOrderRequest) (*pb.PlaceOrderResponse, error) {
-	log.Infof("[PlaceOrder] user_id=%q user_currency=%q", req.UserId, req.UserCurrency)
-
 	orderID, err := uuid.NewUUID()
+	cs.orderId = orderID
+	
+	log.Infof("[PlaceOrder] user_id=%q user_currency=%q, orderid=%q", req.UserId, req.UserCurrency, cs.orderId)
+	
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to generate order uuid")
 	}
@@ -199,7 +202,7 @@ func (cs *checkoutService) PlaceOrder(ctx context.Context, req *pb.PlaceOrderReq
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to charge card: %+v", err)
 	}
-	log.Infof("payment went through (transaction_id: %s)", txID)
+	log.Infof("payment went through (transaction_id: %s), orderid: %s", txID, cs.orderId)
 
 	shippingTrackingID, err := cs.shipOrder(ctx, req.Address, prep.cartItems)
 	if err != nil {
@@ -317,7 +320,7 @@ func (cs *checkoutService) prepOrderItems(ctx context.Context, items []*pb.CartI
 	}
 	defer conn.Close()
 	
-	log.Infof("Items iteration")
+	log.Infof("Items iteration for order: %s", cs.orderId)
 	
 	cl := pb.NewProductCatalogServiceClient(conn)
 
@@ -329,7 +332,7 @@ func (cs *checkoutService) prepOrderItems(ctx context.Context, items []*pb.CartI
 			return nil, fmt.Errorf("failed to get product #%q", item.GetProductId())
 		}
 		
-		log.Infof("Converting currency for: %v", item)
+		log.Infof("Converting currency for order: %s, item: %v", cs.orderId, item)
 		
 		price, err := cs.convertCurrency(ctx, product.GetPriceUsd(), userCurrency)
 		if err != nil {
