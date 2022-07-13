@@ -176,7 +176,7 @@ func (cs *checkoutService) Watch(req *healthpb.HealthCheckRequest, ws healthpb.H
 
 func (cs *checkoutService) PlaceOrder(ctx context.Context, req *pb.PlaceOrderRequest) (*pb.PlaceOrderResponse, error) {
 	orderID, err := uuid.NewUUID()
-	cs.orderId = orderID
+	cs.orderId = (string)orderID
 	
 	log.Infof("[PlaceOrder] user_id=%q user_currency=%q, orderid=%q", req.UserId, req.UserCurrency, cs.orderId)
 	
