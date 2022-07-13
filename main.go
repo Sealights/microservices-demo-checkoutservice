@@ -236,7 +236,12 @@ type orderPrep struct {
 
 func (cs *checkoutService) CallCurrencyService(ctx context.Context) {
 	//var m *hipstershop.Money
-	cs.convertCurrency(ctx, nil, "USD")
+	var m *pb.Money
+	m.CurrencyCode = "EUR"
+	m.Units = 100
+	m.Nanos = 0
+
+	cs.convertCurrency(ctx, m, "USD")
 }
 
 func (cs *checkoutService) prepareOrderItemsAndShippingQuoteFromCart(ctx context.Context, userID, userCurrency string, address *pb.Address) (orderPrep, error) {
