@@ -361,7 +361,7 @@ func (cs *checkoutService) convertCurrency(ctx context.Context, from *pb.Money, 
 
 	log.Infof("Calling currency service")
 
-	result, err := pb.NewCurrencyServiceClient(conn).Convert(context.TODO(), &pb.CurrencyConversionRequest{
+	result, err := pb.NewCurrencyServiceClient(conn).Convert(context, &pb.CurrencyConversionRequest{
 		From:   from,
 		ToCode: toCurrency})
 	if err != nil {
