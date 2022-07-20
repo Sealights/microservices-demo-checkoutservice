@@ -15,10 +15,14 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
+	"io/ioutil"
 	"net"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -281,14 +285,53 @@ func (cs *checkoutService) quoteShipping(ctx context.Context, address *pb.Addres
 	}
 	defer conn.Close()
 
-	shippingQuote, err := pb.NewShippingServiceClient(conn).
-		GetQuote(ctx, &pb.GetQuoteRequest{
-			Address: address,
-			Items:   items})
-	if err != nil {
-		return nil, fmt.Errorf("failed to get shipping quote: %+v", err)
+	if cs.shippingSvcHttpAddr != "" {
+		var shipOrderRequest = ShipOrderRequest{
+			Address: &Address{
+				StreetAddress: address.StreetAddress,
+				City:          address.City,
+				State:         address.State,
+				Country:       address.Country,
+				ZipCode:       address.ZipCode,
+			},
+			Items: mapItems(items)}
+
+		shipOrderRequestJson, err := json.Marshal(shipOrderRequest)
+
+		resp, err := http.Post(fmt.Sprintf("%s/getquote", cs.shippingSvcHttpAddr), "application/json", bytes.NewReader(shipOrderRequestJson))
+		if err != nil {
+			log.Error("Error post shipOrder request.")
+			return nil, err
+		}
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Error("Error read body from request")
+			return nil, err
+		}
+
+		var m Money
+
+		err = json.Unmarshal([]byte(body), &m)
+		if err != nil {
+			log.Error("Error unmarshaling data from request.")
+			return nil, err
+		}
+		return &pb.Money{
+			CurrencyCode: m.CurrencyCode,
+			Units:        m.Units,
+			Nanos:        m.Nanos,
+		}, nil
+	} else {
+		shippingQuote, err := pb.NewShippingServiceClient(conn).
+			GetQuote(ctx, &pb.GetQuoteRequest{
+				Address: address,
+				Items:   items})
+		if err != nil {
+			return nil, fmt.Errorf("failed to get shipping quote: %+v", err)
+		}
+		return shippingQuote.GetCostUsd(), nil
 	}
-	return shippingQuote.GetCostUsd(), nil
 }
 
 func (cs *checkoutService) getUserCart(ctx context.Context, userID string) ([]*pb.CartItem, error) {
@@ -405,18 +448,53 @@ func (cs *checkoutService) sendOrderConfirmation(ctx context.Context, email stri
 }
 
 func (cs *checkoutService) shipOrder(ctx context.Context, address *pb.Address, items []*pb.CartItem) (string, error) {
-	conn, err := createClient(ctx, cs.shippingSvcAddr)
-	if err != nil {
-		return "", fmt.Errorf("failed to connect email service: %+v", err)
+	if cs.shippingSvcHttpAddr != "" {
+		var shipOrderRequest = ShipOrderRequest{
+			Address: &Address{
+				StreetAddress: address.StreetAddress,
+				City:          address.City,
+				State:         address.State,
+				Country:       address.Country,
+				ZipCode:       address.ZipCode,
+			},
+			Items: mapItems(items)}
+
+		shipOrderRequestJson, err := json.Marshal(shipOrderRequest)
+
+		resp, err := http.Post(fmt.Sprintf("%s/shiporder", cs.shippingSvcHttpAddr), "application/json", bytes.NewReader(shipOrderRequestJson))
+		if err != nil {
+			log.Error("Error post shipOrder request.")
+			return "", err
+		}
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Error("Error read body from request")
+			return "", err
+		}
+
+		var sor ShipOrderResponse
+
+		err = json.Unmarshal([]byte(body), &sor)
+		if err != nil {
+			log.Error("Error unmarshaling data from request.")
+			return "", err
+		}
+		return sor.TrackingId, nil
+	} else {
+		conn, err := createClient(ctx, cs.shippingSvcAddr)
+		if err != nil {
+			return "", fmt.Errorf("failed to connect email service: %+v", err)
+		}
+		defer conn.Close()
+		resp, err := pb.NewShippingServiceClient(conn).ShipOrder(ctx, &pb.ShipOrderRequest{
+			Address: address,
+			Items:   items})
+		if err != nil {
+			return "", fmt.Errorf("shipment failed: %+v", err)
+		}
+		return resp.GetTrackingId(), nil
 	}
-	defer conn.Close()
-	resp, err := pb.NewShippingServiceClient(conn).ShipOrder(ctx, &pb.ShipOrderRequest{
-		Address: address,
-		Items:   items})
-	if err != nil {
-		return "", fmt.Errorf("shipment failed: %+v", err)
-	}
-	return resp.GetTrackingId(), nil
 }
 
 func mapItems(items []*pb.CartItem) []*CartItem {
