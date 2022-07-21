@@ -149,7 +149,7 @@ func main() {
 	mustMapEnv(&svc.currencySvcAddr, "CURRENCY_SERVICE_ADDR")
 	mustMapEnv(&svc.emailSvcAddr, "EMAIL_SERVICE_ADDR")
 	mustMapEnv(&svc.paymentSvcAddr, "PAYMENT_SERVICE_ADDR")
-	mustMapEnv(&svc.shippingSvcHttpAddr, "SHIPPING_SERVICE_HTTP_ADDR")
+	svc.shippingSvcHttpAddr = os.Getenv("SHIPPING_SERVICE_HTTP_ADDR")
 
 	log.Infof("service config: %+v", svc)
 
@@ -298,7 +298,7 @@ func (cs *checkoutService) quoteShipping(ctx context.Context, address *pb.Addres
 
 		shipOrderRequestJson, err := json.Marshal(shipOrderRequest)
 
-		resp, err := http.Post(fmt.Sprintf("%s/getquote", cs.shippingSvcHttpAddr), "application/json", bytes.NewReader(shipOrderRequestJson))
+		resp, err := http.Post(fmt.Sprintf("http://%s/getquote", cs.shippingSvcHttpAddr), "application/json", bytes.NewReader(shipOrderRequestJson))
 		if err != nil {
 			log.Error("Error post shipOrder request.")
 			return nil, err
@@ -461,7 +461,7 @@ func (cs *checkoutService) shipOrder(ctx context.Context, address *pb.Address, i
 
 		shipOrderRequestJson, err := json.Marshal(shipOrderRequest)
 
-		resp, err := http.Post(fmt.Sprintf("%s/shiporder", cs.shippingSvcHttpAddr), "application/json", bytes.NewReader(shipOrderRequestJson))
+		resp, err := http.Post(fmt.Sprintf("http://%s/shiporder", cs.shippingSvcHttpAddr), "application/json", bytes.NewReader(shipOrderRequestJson))
 		if err != nil {
 			log.Error("Error post shipOrder request.")
 			return "", err
