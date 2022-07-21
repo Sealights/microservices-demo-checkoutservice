@@ -20,9 +20,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"io/ioutil"
 	"net"
-	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -298,7 +298,7 @@ func (cs *checkoutService) quoteShipping(ctx context.Context, address *pb.Addres
 
 		shipOrderRequestJson, err := json.Marshal(shipOrderRequest)
 
-		resp, err := http.Post(fmt.Sprintf("http://%s/getquote", cs.shippingSvcHttpAddr), "application/json", bytes.NewReader(shipOrderRequestJson))
+		resp, err := otelhttp.Post(ctx, fmt.Sprintf("http://%s/getquote", cs.shippingSvcHttpAddr), "application/json", bytes.NewReader(shipOrderRequestJson))
 		if err != nil {
 			log.Error("Error post shipOrder request.")
 			return nil, err
@@ -461,7 +461,7 @@ func (cs *checkoutService) shipOrder(ctx context.Context, address *pb.Address, i
 
 		shipOrderRequestJson, err := json.Marshal(shipOrderRequest)
 
-		resp, err := http.Post(fmt.Sprintf("http://%s/shiporder", cs.shippingSvcHttpAddr), "application/json", bytes.NewReader(shipOrderRequestJson))
+		resp, err := otelhttp.Post(ctx, fmt.Sprintf("http://%s/shiporder", cs.shippingSvcHttpAddr), "application/json", bytes.NewReader(shipOrderRequestJson))
 		if err != nil {
 			log.Error("Error post shipOrder request.")
 			return "", err
