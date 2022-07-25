@@ -120,6 +120,8 @@ type checkoutService struct {
 	emailSvcAddr          string
 	paymentSvcAddr        string
 	shippingSvcHttpAddr   string
+	cartSvcHttpAddr       string
+	httpTraffic           string
 	pb.UnimplementedCheckoutServiceServer
 	orderId string
 }
@@ -149,7 +151,10 @@ func main() {
 	mustMapEnv(&svc.currencySvcAddr, "CURRENCY_SERVICE_ADDR")
 	mustMapEnv(&svc.emailSvcAddr, "EMAIL_SERVICE_ADDR")
 	mustMapEnv(&svc.paymentSvcAddr, "PAYMENT_SERVICE_ADDR")
+	mustMapEnv(&svc.httpTraffic, "HTTP_TRAFFIC")
+
 	svc.shippingSvcHttpAddr = os.Getenv("SHIPPING_SERVICE_HTTP_ADDR")
+	svc.cartSvcHttpAddr = os.Getenv("CART_SERVICE_HTTP_ADDR")
 
 	log.Infof("service config: %+v", svc)
 
@@ -285,7 +290,7 @@ func (cs *checkoutService) quoteShipping(ctx context.Context, address *pb.Addres
 	}
 	defer conn.Close()
 
-	if cs.shippingSvcHttpAddr != "" {
+	if cs.httpTraffic == "true" && cs.shippingSvcHttpAddr != "" {
 		var shipOrderRequest = ShipOrderRequest{
 			Address: &Address{
 				StreetAddress: address.StreetAddress,
@@ -335,30 +340,88 @@ func (cs *checkoutService) quoteShipping(ctx context.Context, address *pb.Addres
 }
 
 func (cs *checkoutService) getUserCart(ctx context.Context, userID string) ([]*pb.CartItem, error) {
-	conn, err := createClient(ctx, cs.cartSvcAddr)
-	if err != nil {
-		return nil, fmt.Errorf("could not connect cart service: %+v", err)
-	}
-	defer conn.Close()
+	if cs.httpTraffic == "true" && cs.cartSvcHttpAddr != "" {
+		var cartRequest = CartRequest{
+			UserId: userID}
 
-	cart, err := pb.NewCartServiceClient(conn).GetCart(ctx, &pb.GetCartRequest{UserId: userID})
-	if err != nil {
-		return nil, fmt.Errorf("failed to get user cart during checkout: %+v", err)
+		cartRequestJson, err := json.Marshal(cartRequest)
+
+		resp, err := otelhttp.Post(ctx, fmt.Sprintf("http://%s/Cart/GetCart", cs.cartSvcHttpAddr), "application/json", bytes.NewReader(cartRequestJson))
+		if err != nil {
+			log.Error("Error post GetCart request.")
+			return nil, err
+		}
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Error("Error read body from request")
+			return nil, err
+		}
+
+		var c Cart
+
+		err = json.Unmarshal([]byte(body), &c)
+		if err != nil {
+			log.Error("Error unmarshaling data from request.")
+			return nil, err
+		}
+
+		var ci []*pb.CartItem
+
+		for _, item := range c.Items {
+			ci = append(ci, &pb.CartItem{
+				ProductId: item.ProductId,
+				Quantity:  item.Quantity,
+			})
+		}
+		return ci, nil
+	} else {
+		conn, err := createClient(ctx, cs.cartSvcAddr)
+		if err != nil {
+			return nil, fmt.Errorf("could not connect cart service: %+v", err)
+		}
+		defer conn.Close()
+
+		cart, err := pb.NewCartServiceClient(conn).GetCart(ctx, &pb.GetCartRequest{UserId: userID})
+		if err != nil {
+			return nil, fmt.Errorf("failed to get user cart during checkout: %+v", err)
+		}
+		return cart.GetItems(), nil
 	}
-	return cart.GetItems(), nil
 }
 
 func (cs *checkoutService) emptyUserCart(ctx context.Context, userID string) error {
-	conn, err := createClient(ctx, cs.cartSvcAddr)
-	if err != nil {
-		return fmt.Errorf("could not connect cart service: %+v", err)
-	}
-	defer conn.Close()
+	if cs.httpTraffic == "true" && cs.cartSvcHttpAddr != "" {
+		var cartRequest = CartRequest{
+			UserId: userID}
 
-	if _, err = pb.NewCartServiceClient(conn).EmptyCart(ctx, &pb.EmptyCartRequest{UserId: userID}); err != nil {
-		return fmt.Errorf("failed to empty user cart during checkout: %+v", err)
+		cartRequestJson, err := json.Marshal(cartRequest)
+
+		resp, err := otelhttp.Post(ctx, fmt.Sprintf("http://%s/Cart/EmptyCart", cs.cartSvcHttpAddr), "application/json", bytes.NewReader(cartRequestJson))
+		if err != nil {
+			log.Error("Error post EmptyCart request.")
+			return err
+		}
+
+		_, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Error("Error read body from request")
+			return err
+		}
+
+		return nil
+	} else {
+		conn, err := createClient(ctx, cs.cartSvcAddr)
+		if err != nil {
+			return fmt.Errorf("could not connect cart service: %+v", err)
+		}
+		defer conn.Close()
+
+		if _, err = pb.NewCartServiceClient(conn).EmptyCart(ctx, &pb.EmptyCartRequest{UserId: userID}); err != nil {
+			return fmt.Errorf("failed to empty user cart during checkout: %+v", err)
+		}
+		return nil
 	}
-	return nil
 }
 
 func (cs *checkoutService) prepOrderItems(ctx context.Context, items []*pb.CartItem, userCurrency string) ([]*pb.OrderItem, error) {
@@ -448,7 +511,7 @@ func (cs *checkoutService) sendOrderConfirmation(ctx context.Context, email stri
 }
 
 func (cs *checkoutService) shipOrder(ctx context.Context, address *pb.Address, items []*pb.CartItem) (string, error) {
-	if cs.shippingSvcHttpAddr != "" {
+	if cs.httpTraffic == "true" && cs.shippingSvcHttpAddr != "" {
 		var shipOrderRequest = ShipOrderRequest{
 			Address: &Address{
 				StreetAddress: address.StreetAddress,
