@@ -31,3 +31,17 @@ type Money struct {
 type ShipOrderResponse struct {
 	TrackingId string `json:"trackingId"`
 }
+
+type Cart struct {
+	UserId string      `json:"user_id"`
+	Items  []*CartItem `json:"items"`
+}
+
+type CartRequest struct {
+	UserId string `json:"user_id"`
+}
+
+type ItemRequest struct {
+	UserId string    `json:"user_id"`
+	Items  *CartItem `json:"item"`
+}
