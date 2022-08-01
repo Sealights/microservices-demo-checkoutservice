@@ -45,3 +45,8 @@ type ItemRequest struct {
 	UserId string    `json:"user_id"`
 	Items  *CartItem `json:"item"`
 }
+
+type CurrencyConversionRequest struct {
+	From   *Money `json:"from"`
+	ToCode string `json:"to_code"`
+}

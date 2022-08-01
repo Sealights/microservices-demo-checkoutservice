@@ -15,13 +15,9 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-	"io/ioutil"
 	"net"
 	"os"
 	"strings"
@@ -121,6 +117,7 @@ type checkoutService struct {
 	paymentSvcAddr        string
 	shippingSvcHttpAddr   string
 	cartSvcHttpAddr       string
+	currencySvcHttpAddr   string
 	httpTraffic           string
 	pb.UnimplementedCheckoutServiceServer
 	orderId string
@@ -155,6 +152,8 @@ func main() {
 
 	svc.shippingSvcHttpAddr = os.Getenv("SHIPPING_SERVICE_HTTP_ADDR")
 	svc.cartSvcHttpAddr = os.Getenv("CART_SERVICE_HTTP_ADDR")
+	svc.cartSvcHttpAddr = os.Getenv("CART_SERVICE_HTTP_ADDR")
+	svc.currencySvcHttpAddr = os.Getenv("CURRENCY_SERVICE_ADDR_HTTP")
 
 	log.Infof("service config: %+v", svc)
 
@@ -291,42 +290,11 @@ func (cs *checkoutService) quoteShipping(ctx context.Context, address *pb.Addres
 	defer conn.Close()
 
 	if cs.httpTraffic == "true" && cs.shippingSvcHttpAddr != "" {
-		var shipOrderRequest = ShipOrderRequest{
-			Address: &Address{
-				StreetAddress: address.StreetAddress,
-				City:          address.City,
-				State:         address.State,
-				Country:       address.Country,
-				ZipCode:       address.ZipCode,
-			},
-			Items: mapItems(items)}
-
-		shipOrderRequestJson, err := json.Marshal(shipOrderRequest)
-
-		resp, err := otelhttp.Post(ctx, fmt.Sprintf("http://%s/getquote", cs.shippingSvcHttpAddr), "application/json", bytes.NewReader(shipOrderRequestJson))
+		result, err := cs.quoteShippingByHttp(ctx, address, items)
 		if err != nil {
-			log.Error("Error post shipOrder request.")
 			return nil, err
 		}
-
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Error("Error read body from request")
-			return nil, err
-		}
-
-		var m Money
-
-		err = json.Unmarshal([]byte(body), &m)
-		if err != nil {
-			log.Error("Error unmarshaling data from request.")
-			return nil, err
-		}
-		return &pb.Money{
-			CurrencyCode: m.CurrencyCode,
-			Units:        m.Units,
-			Nanos:        m.Nanos,
-		}, nil
+		return result, nil
 	} else {
 		shippingQuote, err := pb.NewShippingServiceClient(conn).
 			GetQuote(ctx, &pb.GetQuoteRequest{
@@ -341,40 +309,11 @@ func (cs *checkoutService) quoteShipping(ctx context.Context, address *pb.Addres
 
 func (cs *checkoutService) getUserCart(ctx context.Context, userID string) ([]*pb.CartItem, error) {
 	if cs.httpTraffic == "true" && cs.cartSvcHttpAddr != "" {
-		var cartRequest = CartRequest{
-			UserId: userID}
-
-		cartRequestJson, err := json.Marshal(cartRequest)
-
-		resp, err := otelhttp.Post(ctx, fmt.Sprintf("http://%s/Cart/GetCart", cs.cartSvcHttpAddr), "application/json", bytes.NewReader(cartRequestJson))
+		result, err := cs.getUserCartByHttp(ctx, userID)
 		if err != nil {
-			log.Error("Error post GetCart request.")
 			return nil, err
 		}
-
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Error("Error read body from request")
-			return nil, err
-		}
-
-		var c Cart
-
-		err = json.Unmarshal([]byte(body), &c)
-		if err != nil {
-			log.Error("Error unmarshaling data from request.")
-			return nil, err
-		}
-
-		var ci []*pb.CartItem
-
-		for _, item := range c.Items {
-			ci = append(ci, &pb.CartItem{
-				ProductId: item.ProductId,
-				Quantity:  item.Quantity,
-			})
-		}
-		return ci, nil
+		return result, nil
 	} else {
 		conn, err := createClient(ctx, cs.cartSvcAddr)
 		if err != nil {
@@ -392,23 +331,10 @@ func (cs *checkoutService) getUserCart(ctx context.Context, userID string) ([]*p
 
 func (cs *checkoutService) emptyUserCart(ctx context.Context, userID string) error {
 	if cs.httpTraffic == "true" && cs.cartSvcHttpAddr != "" {
-		var cartRequest = CartRequest{
-			UserId: userID}
-
-		cartRequestJson, err := json.Marshal(cartRequest)
-
-		resp, err := otelhttp.Post(ctx, fmt.Sprintf("http://%s/Cart/EmptyCart", cs.cartSvcHttpAddr), "application/json", bytes.NewReader(cartRequestJson))
+		err := cs.emptyUserCartByHttp(ctx, userID)
 		if err != nil {
-			log.Error("Error post EmptyCart request.")
 			return err
 		}
-
-		_, err = ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Error("Error read body from request")
-			return err
-		}
-
 		return nil
 	} else {
 		conn, err := createClient(ctx, cs.cartSvcAddr)
@@ -461,25 +387,33 @@ func (cs *checkoutService) prepOrderItems(ctx context.Context, items []*pb.CartI
 func (cs *checkoutService) convertCurrency(ctx context.Context, from *pb.Money, toCurrency string) (*pb.Money, error) {
 	log.Infof("Converting currency. Svc addr: %s", cs.currencySvcAddr)
 
-	conn, err := createClient(ctx, cs.currencySvcAddr)
-	if err != nil {
-		return nil, fmt.Errorf("could not connect currency service: %+v", err)
+	if cs.httpTraffic == "true" && cs.currencySvcHttpAddr != "" {
+		result, err := cs.convertCurrencyByHttp(ctx, from, toCurrency)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
+	} else {
+		conn, err := createClient(ctx, cs.currencySvcAddr)
+		if err != nil {
+			return nil, fmt.Errorf("could not connect currency service: %+v", err)
+		}
+		defer conn.Close()
+
+		log.Infof("Calling currency service")
+
+		result, err := pb.NewCurrencyServiceClient(conn).Convert(ctx, &pb.CurrencyConversionRequest{
+			From:   from,
+			ToCode: toCurrency})
+		if err != nil {
+			log.Infof("failed to convert currency: %+v", err)
+			return nil, fmt.Errorf("failed to convert currency: %+v", err)
+		}
+
+		log.Infof("Conversion done")
+
+		return result, err
 	}
-	defer conn.Close()
-
-	log.Infof("Calling currency service")
-
-	result, err := pb.NewCurrencyServiceClient(conn).Convert(ctx, &pb.CurrencyConversionRequest{
-		From:   from,
-		ToCode: toCurrency})
-	if err != nil {
-		log.Infof("failed to convert currency: %+v", err)
-		return nil, fmt.Errorf("failed to convert currency: %+v", err)
-	}
-
-	log.Infof("Conversion done")
-
-	return result, err
 }
 
 func (cs *checkoutService) chargeCard(ctx context.Context, amount *pb.Money, paymentInfo *pb.CreditCardInfo) (string, error) {
@@ -512,38 +446,11 @@ func (cs *checkoutService) sendOrderConfirmation(ctx context.Context, email stri
 
 func (cs *checkoutService) shipOrder(ctx context.Context, address *pb.Address, items []*pb.CartItem) (string, error) {
 	if cs.httpTraffic == "true" && cs.shippingSvcHttpAddr != "" {
-		var shipOrderRequest = ShipOrderRequest{
-			Address: &Address{
-				StreetAddress: address.StreetAddress,
-				City:          address.City,
-				State:         address.State,
-				Country:       address.Country,
-				ZipCode:       address.ZipCode,
-			},
-			Items: mapItems(items)}
-
-		shipOrderRequestJson, err := json.Marshal(shipOrderRequest)
-
-		resp, err := otelhttp.Post(ctx, fmt.Sprintf("http://%s/shiporder", cs.shippingSvcHttpAddr), "application/json", bytes.NewReader(shipOrderRequestJson))
+		result, err := cs.shipOrderByHttp(ctx, address, items)
 		if err != nil {
-			log.Error("Error post shipOrder request.")
 			return "", err
 		}
-
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Error("Error read body from request")
-			return "", err
-		}
-
-		var sor ShipOrderResponse
-
-		err = json.Unmarshal([]byte(body), &sor)
-		if err != nil {
-			log.Error("Error unmarshaling data from request.")
-			return "", err
-		}
-		return sor.TrackingId, nil
+		return result, nil
 	} else {
 		conn, err := createClient(ctx, cs.shippingSvcAddr)
 		if err != nil {
