@@ -193,7 +193,7 @@ func (cs *checkoutService) PlaceOrder(ctx context.Context, req *pb.PlaceOrderReq
 	orderID, err := uuid.NewUUID()
 	cs.orderId = orderID.String()
 
-	log.Infof("[PlaceOrder] user_id=%q user_currency=%q, orderid=%q", req.UserId, req.UserCurrency, cs.orderId)
+  log.Infof("[PlaceOrder] user_id=%q user_currency=%q, orderid=%q", req.UserId, req.UserCurrency, cs.orderId)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to generate order uuid")
