@@ -57,6 +57,9 @@ else \
         --latest-commit "${LATEST_COMMIT}" --pull-request-number "${PR_NUMBER}" --repository-url "${TARGET_REPO_URL}"; \      
 fi
 
+RUN echo "BUILD SESSION ID:"
+RUN cat buildSessionId.txt
+
 RUN ./slcli scan  --bsid buildSessionId.txt --path-to-scanner ./slgoagent --workspacepath ./ --scm git --scmProvider github
 Run go test -v ./...
 RUN go build -gcflags="${SKAFFOLD_GO_GCFLAGS}" -o /checkoutservice .
